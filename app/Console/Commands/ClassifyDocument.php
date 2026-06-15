@@ -12,7 +12,8 @@ class ClassifyDocument extends Command
 {
     protected $signature = 'classify:document
                             {--text= : Document text to classify}
-                            {--file= : Path to a .txt or .pdf file}';
+                            {--file= : Path to a .txt or .pdf file}
+                            {--rag   : Inject relevant context from the knowledge base}';
 
     protected $description = 'Classify a document using Claude AI';
 
@@ -27,6 +28,7 @@ class ClassifyDocument extends Command
     {
         $text     = $this->option('text');
         $filePath = $this->option('file');
+        $useRag   = (bool) $this->option('rag');
 
         if (! $text && ! $filePath) {
             $this->error('Provide --text or --file.');
@@ -58,9 +60,13 @@ class ClassifyDocument extends Command
                 $text = $this->extractText($filePath, $ext);
             }
 
-            $this->info('Classifying document...');
+            if ($useRag) {
+                $this->info('Classifying document with RAG context...');
+            } else {
+                $this->info('Classifying document...');
+            }
 
-            $result = $this->classifier->classify($text, 'artisan', $filename);
+            $result = $this->classifier->classify($text, 'artisan', $filename, $useRag);
             $record = $this->router->route($result);
 
             $label = config("classifier.categories.{$result->category}.label", $result->category);
@@ -71,6 +77,7 @@ class ClassifyDocument extends Command
                     ['Category',   $label],
                     ['Confidence', ucfirst($result->confidence)],
                     ['Rationale',  wordwrap($result->rationale, 70, "\n", true)],
+                    ['RAG',        $useRag ? 'enabled' : 'disabled'],
                     ['DB record',  "#{$record->id}"],
                     ['Webhook',    $record->webhook_fired ? 'fired' : 'skipped'],
                     ['Slack',      $record->slack_sent    ? 'sent'  : 'skipped'],

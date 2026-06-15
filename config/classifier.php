@@ -78,4 +78,20 @@ return [
         'allowed_extensions' => ['txt', 'pdf'],
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | RAG (Retrieval-Augmented Generation)
+    |--------------------------------------------------------------------------
+    | Drop .txt or .pdf files into storage/app/rag/ then run:
+    |   php artisan rag:index
+    |
+    | Pass --rag to the Artisan command or use_rag=true in the POST body
+    | to inject relevant context into the classification prompt.
+    */
+    'rag' => [
+        'knowledge_base_path' => 'rag',   // relative to storage/app/
+        'chunk_size'          => 300,     // words per chunk
+        'top_n'               => 3,       // chunks to inject per request
+    ],
+
 ];

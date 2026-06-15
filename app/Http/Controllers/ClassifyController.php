@@ -20,12 +20,14 @@ class ClassifyController extends Controller
     public function store(Request $request): JsonResponse
     {
         $request->validate([
-            'text' => 'required_without:file|string|min:10|max:50000',
-            'file' => 'required_without:text|file|mimes:txt,pdf|max:5120',
+            'text'    => 'required_without:file|string|min:10|max:50000',
+            'file'    => 'required_without:text|file|mimes:txt,pdf|max:5120',
+            'use_rag' => 'boolean',
         ]);
 
         $filename = null;
         $tmpPath  = null;
+        $useRag   = (bool) $request->input('use_rag', false);
 
         try {
             if ($request->hasFile('file')) {
@@ -38,7 +40,7 @@ class ClassifyController extends Controller
                 $text = $request->input('text');
             }
 
-            $result = $this->classifier->classify($text, 'api', $filename);
+            $result = $this->classifier->classify($text, 'api', $filename, $useRag);
             $record = $this->router->route($result);
 
             $label = config("classifier.categories.{$result->category}.label", $result->category);
@@ -50,6 +52,7 @@ class ClassifyController extends Controller
                     'classification_id' => $record->id,
                     'document_source'   => $result->documentSource,
                     'filename'          => $result->filename,
+                    'rag_used'          => $useRag,
                     'routing'           => [
                         'logged'        => true,
                         'webhook_fired' => $record->webhook_fired,

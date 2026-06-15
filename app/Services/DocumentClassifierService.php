@@ -8,9 +8,10 @@ use Illuminate\Support\Facades\Http;
 
 class DocumentClassifierService
 {
-    public function classify(string $text, string $source, ?string $filename = null): ClassificationResult
+    public function classify(string $text, string $source, ?string $filename = null, bool $useRag = false): ClassificationResult
     {
-        $systemPrompt = $this->buildSystemPrompt();
+        $ragChunks    = $useRag ? app(RagService::class)->retrieve($text) : [];
+        $systemPrompt = $this->buildSystemPrompt($ragChunks);
         $excerpt      = mb_substr($text, 0, 500);
 
         $response = Http::timeout(config('classifier.api.timeout'))
@@ -52,7 +53,7 @@ class DocumentClassifierService
         );
     }
 
-    private function buildSystemPrompt(): string
+    private function buildSystemPrompt(array $ragChunks = []): string
     {
         $categories = config('classifier.categories');
 
@@ -64,9 +65,19 @@ class DocumentClassifierService
         $validKeys  = implode('|', array_keys($categories));
         $extraInstr = config('classifier.extra_instructions');
 
+        $contextBlock = '';
+        if (! empty($ragChunks)) {
+            $parts = [];
+            foreach ($ragChunks as $chunk) {
+                $parts[] = "[{$chunk['source']}]\n{$chunk['text']}";
+            }
+            $contextText  = implode("\n\n---\n\n", $parts);
+            $contextBlock = "\nRelevant context from your knowledge base:\n\n{$contextText}\n\nUse this context to inform your classification.\n";
+        }
+
         return <<<PROMPT
 You are a document classification assistant.
-
+{$contextBlock}
 Classify the document provided by the user into EXACTLY ONE of the following categories:
 
 {$categoryLines}

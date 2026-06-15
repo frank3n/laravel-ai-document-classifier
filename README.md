@@ -165,6 +165,69 @@ CLASSIFIER_EXTRA_INSTRUCTIONS="Focus on financial documents. When in doubt, pref
 
 ---
 
+## RAG pipeline (optional)
+
+By default, Claude classifies documents using only its own knowledge and your category descriptions. The optional RAG pipeline lets you inject relevant excerpts from your own documents into the prompt — useful when your categories have nuanced internal definitions that a generic description can't capture.
+
+**When it helps:** custom or domain-specific categories, internal policy documents, edge cases Claude would otherwise guess at.
+
+**When it doesn't add much:** standard categories like invoice/contract/support, where Claude already classifies accurately without extra context.
+
+### How it works
+
+1. You drop `.txt` or `.pdf` files into `storage/app/private/rag/`
+2. Run `php artisan rag:index` — splits them into ~300-word chunks and stores them in a SQLite FTS5 full-text search table
+3. When `--rag` is passed (or `use_rag: true` in the API), the classifier queries the FTS table for the chunks most relevant to the incoming document and injects them into the system prompt before calling Claude
+
+No external vector database, no embeddings API — just SQLite FTS5 with BM25 ranking, which ships with PHP.
+
+### Setup
+
+```bash
+# 1. Add your reference documents
+cp your-policy.txt storage/app/private/rag/
+
+# 2. Index them (re-run any time you add or update files)
+php artisan rag:index
+```
+
+```
++-------------------------------+--------+
+| File                          | Chunks |
++-------------------------------+--------+
+| your-policy.txt               | 3      |
++-------------------------------+--------+
+1 file(s) indexed into 3 chunk(s).
+```
+
+### Using RAG
+
+```bash
+# Artisan
+php artisan classify:document --rag --file="document.pdf"
+
+# cURL
+curl -X POST http://localhost:8000/api/classify \
+  -H "Content-Type: application/json" \
+  -d '{"text": "...", "use_rag": true}'
+```
+
+The `rag_used` field in the API response confirms whether RAG was active for that request.
+
+### Configuration
+
+Tune chunking and retrieval in `config/classifier.php`:
+
+```php
+'rag' => [
+    'knowledge_base_path' => 'rag',  // relative to storage/app/private/
+    'chunk_size'          => 300,    // words per chunk
+    'top_n'               => 3,      // chunks injected per request
+],
+```
+
+---
+
 ## Project structure
 
 ```
@@ -175,6 +238,7 @@ app/
     SendSlackNotificationAction.php  # Slack Block Kit message
   Console/Commands/
     ClassifyDocument.php             # php artisan classify:document
+    IndexKnowledgeBase.php           # php artisan rag:index
   DTOs/
     ClassificationResult.php         # immutable result value object
   Exceptions/
@@ -186,12 +250,17 @@ app/
   Services/
     DocumentClassifierService.php    # Claude API call + JSON parsing
     DocumentRouter.php               # chains the action classes
+    RagService.php                   # FTS5 indexing and chunk retrieval
 config/
   classifier.php                     # all configuration lives here
 database/migrations/
   ..._create_classifications_table.php
+  ..._create_rag_chunks_table.php    # SQLite FTS5 virtual table
 routes/
   api.php                            # POST /api/classify
+storage/app/private/
+  rag/                               # drop knowledge base docs here
+  samples/                           # sample documents for testing
 ```
 
 ---
