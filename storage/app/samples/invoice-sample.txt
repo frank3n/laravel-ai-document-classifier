@@ -1,0 +1,32 @@
+INVOICE
+
+Invoice Number: INV-2024-001
+Date: January 15, 2024
+Due Date: February 15, 2024
+
+Bill To:
+Acme Corporation
+123 Business Ave
+New York, NY 10001
+
+From:
+Web Solutions Ltd
+456 Tech Street
+San Francisco, CA 94102
+
+Services Rendered:
+- Website redesign and development: $2,500.00
+- SEO optimization package: $800.00
+- Monthly maintenance (Jan 2024): $250.00
+
+Subtotal: $3,550.00
+Tax (10%): $355.00
+TOTAL DUE: $3,905.00
+
+Payment Terms: Net 30
+Please make payment to: Web Solutions Ltd
+Bank: First National Bank
+Account: 1234567890
+Routing: 021000021
+
+Thank you for your business.

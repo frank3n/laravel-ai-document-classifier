@@ -1,0 +1,32 @@
+SERVICE AGREEMENT
+
+This Service Agreement ("Agreement") is entered into as of March 1, 2024, between:
+
+Client: Acme Corporation, a Delaware corporation ("Client")
+Service Provider: Web Solutions Ltd, a California LLC ("Provider")
+
+1. SERVICES
+Provider agrees to deliver web development and digital marketing services as outlined in Schedule A attached hereto.
+
+2. TERM
+This Agreement shall commence on March 1, 2024, and continue for a period of twelve (12) months unless terminated earlier in accordance with Section 7.
+
+3. COMPENSATION
+Client shall pay Provider a monthly retainer of $3,000, due on the first business day of each month.
+
+4. CONFIDENTIALITY
+Each party agrees to keep confidential all proprietary information disclosed by the other party.
+
+5. INTELLECTUAL PROPERTY
+All work product created by Provider under this Agreement shall be the exclusive property of Client upon full payment.
+
+6. LIMITATION OF LIABILITY
+In no event shall either party be liable for indirect, incidental, or consequential damages.
+
+7. TERMINATION
+Either party may terminate this Agreement with thirty (30) days written notice.
+
+IN WITNESS WHEREOF, the parties have executed this Agreement as of the date first written above.
+
+________________________          ________________________
+Client Signature                   Provider Signature
